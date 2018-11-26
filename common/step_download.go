@@ -49,7 +49,7 @@ type StepDownload struct {
 	Extension string
 }
 
-func (s *StepDownload) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+func (s *StepDownload) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
 
 	ui.Say(fmt.Sprintf("Retrieving %s", s.Description))
@@ -91,7 +91,7 @@ func (s *StepDownload) Run(_ context.Context, state multistep.StateBag) multiste
 		defer lock.Unlock()
 
 		ui.Say(fmt.Sprintf("Trying %s", u.String()))
-		if err := getter.GetFile(targetPath, u.String()); err != nil {
+		if err := getter.GetFile(targetPath, u.String(), getter.WithCheggaaaProgressBarV1(), getter.WithContext(ctx)); err != nil {
 			errs = append(errs, err)
 			continue // may be another url will work
 		}
