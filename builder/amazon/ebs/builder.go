@@ -8,7 +8,9 @@ package ebs
 import (
 	"fmt"
 	"log"
+	"net/http"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	awscommon "github.com/hashicorp/packer/builder/amazon/common"
 	"github.com/hashicorp/packer/common"
@@ -92,7 +94,16 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	if err != nil {
 		return nil, err
 	}
-	ec2conn := ec2.New(session)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+		},
+	}
+
+	ec2conn := ec2.New(session, &aws.Config{
+		HTTPClient: client,
+	})
 
 	// If the subnet is specified but not the VpcId or AZ, try to determine them automatically
 	if b.config.SubnetId != "" && (b.config.AvailabilityZone == "" || b.config.VpcId == "") {

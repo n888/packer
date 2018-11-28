@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -34,7 +35,14 @@ func (s *StepCreateTags) Run(_ context.Context, state multistep.StateBag) multis
 	for region, ami := range amis {
 		ui.Say(fmt.Sprintf("Adding tags to AMI (%s)...", ami))
 
+	        client := &http.Client{
+		        Transport: &http.Transport{
+			        Proxy: http.ProxyFromEnvironment,
+			},
+		}
+
 		regionConn := ec2.New(session, &aws.Config{
+			HTTPClient: client,
 			Region: aws.String(region),
 		})
 
